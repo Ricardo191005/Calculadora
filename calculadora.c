@@ -9,13 +9,81 @@
 
 ********************************************************
 * Atualizações:
-* Versão Inicial - Data 20/09/2024 - 16h20
+* Versão Inicial - calculadora de conversão (binário, octal, hexadecimal e BCD) - Data 20/09/2024 - 16h20
+* Adição da conversão de real em decimal para float e double                    - Data 20/09/2024 - 17h10
 ********************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <windows.h> // Inclua a biblioteca para usar SetConsoleOutputCP
 
+// Estruturas de união para facilitar a manipulação de bits
+union FloatUnion {
+    float f;
+    uint32_t bits;
+};
+
+union DoubleUnion {
+    double d;
+    uint64_t bits;
+};
+
+// Função para converter um inteiro para binário e imprimir com 32 bits
+void imprimirBits32(uint32_t n) {
+    for (int i = 31; i >= 0; i--) {
+        printf("%d", (n >> i) & 1);
+    }
+    printf("\n");
+}
+
+// Função para converter um inteiro para binário e imprimir com 64 bits
+void imprimirBits64(uint64_t n) {
+    for (int i = 63; i >= 0; i--) {
+        printf("%d", (n >> i) & 1);
+    }
+    printf("\n");
+}
+
+// Função para exibir os componentes de um número float em ponto flutuante (32 bits)
+void decomporFloat(float num) {
+    union FloatUnion u;
+    u.f = num;
+
+    uint32_t sinal = (u.bits >> 31) & 1;
+    uint32_t expoente = (u.bits >> 23) & 0xFF;
+    uint32_t fracao = u.bits & 0x7FFFFF;  // 23 bits de fração
+
+    printf("Número (float): %f\n", num);
+    printf("Bits: ");
+    imprimirBits32(u.bits);
+
+    printf("Sinal: %u\n", sinal);
+    printf("Expoente: %u (sem viés)\n", expoente);
+    printf("Expoente com viés: %d\n", expoente - 127);  // O viés do expoente em float é 127
+    printf("Fracao: %u\n\n", fracao);
+}
+
+// Função para exibir os componentes de um número double em ponto flutuante (64 bits)
+void decomporDouble(double num) {
+    union DoubleUnion u;
+    u.d = num;
+
+    uint64_t sinal = (u.bits >> 63) & 1;
+    uint64_t expoente = (u.bits >> 52) & 0x7FF;
+    uint64_t fracao = u.bits & 0xFFFFFFFFFFFFF;  // 52 bits de fração
+
+    printf("Número (double): %lf\n", num);
+    printf("Bits: ");
+    imprimirBits64(u.bits);
+
+    printf("Sinal: %llu\n", sinal);
+    printf("Expoente: %llu (sem viés)\n", expoente);
+    printf("Expoente com viés: %lld\n", expoente - 1023);  // O viés do expoente em double é 1023
+    printf("Fracao: %llu\n\n", fracao);
+}
+
+// Função para converter decimal para binário
 void decimalParaBinario(int n) {
     int binario[32], i = 0;
     printf("Convertendo %d para binário:\n", n);
@@ -32,6 +100,7 @@ void decimalParaBinario(int n) {
     printf("\n\n");
 }
 
+// Função para converter decimal para octal
 void decimalParaOctal(int n) {
     int octal[32], i = 0;
     printf("Convertendo %d para octal:\n", n);
@@ -48,6 +117,7 @@ void decimalParaOctal(int n) {
     printf("\n\n");
 }
 
+// Função para converter decimal para hexadecimal
 void decimalParaHexadecimal(int n) {
     char hexa[32];
     int i = 0;
@@ -69,6 +139,7 @@ void decimalParaHexadecimal(int n) {
     printf("\n\n");
 }
 
+// Função para converter decimal para BCD (Binary Coded Decimal)
 void decimalParaBCD(int n) {
     int bcd[32], i = 0;
     printf("Convertendo %d para BCD (Binary Coded Decimal):\n", n);
@@ -97,35 +168,70 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
 
     int numero, escolha;
+    float numeroFloat;
+    double numeroDouble;
 
-    printf("Calculadora de conversão de bases\n");
-    printf("Digite um número na base 10: ");
-    scanf("%d", &numero);
-
-    printf("\nEscolha a conversão:\n");
-    printf("1 - Converter para Binário\n");
-    printf("2 - Converter para Octal\n");
-    printf("3 - Converter para Hexadecimal\n");
-    printf("4 - Converter para BCD\n");
+    printf("Calculadora de conversão de bases e decomposição de ponto flutuante\n");
+    printf("Escolha uma opção:\n");
+    printf("1 - Converter número decimal para outras bases\n");
+    printf("2 - Decompor número real (float e double)\n");
     printf("Sua escolha: ");
     scanf("%d", &escolha);
 
-    switch (escolha) {
-        case 1:
-            decimalParaBinario(numero);
-            break;
-        case 2:
-            decimalParaOctal(numero);
-            break;
-        case 3:
-            decimalParaHexadecimal(numero);
-            break;
-        case 4:
-            decimalParaBCD(numero);
-            break;
-        default:
-            printf("Escolha inválida.\n");
-            break;
+    if (escolha == 1) {
+        printf("Digite um número na base 10: ");
+        scanf("%d", &numero);
+
+        printf("\nEscolha a conversão:\n");
+        printf("1 - Converter para Binário\n");
+        printf("2 - Converter para Octal\n");
+        printf("3 - Converter para Hexadecimal\n");
+        printf("4 - Converter para BCD\n");
+        printf("Sua escolha: ");
+        scanf("%d", &escolha);
+
+        switch (escolha) {
+            case 1:
+                decimalParaBinario(numero);
+                break;
+            case 2:
+                decimalParaOctal(numero);
+                break;
+            case 3:
+                decimalParaHexadecimal(numero);
+                break;
+            case 4:
+                decimalParaBCD(numero);
+                break;
+            default:
+                printf("Escolha inválida.\n");
+                break;
+        }
+    } else if (escolha == 2) {
+        printf("Digite um número real (float): ");
+        scanf("%f", &numeroFloat);
+        printf("Digite um número real (double): ");
+        scanf("%lf", &numeroDouble);
+
+        printf("\nEscolha a decomposição:\n");
+        printf("1 - Decompor float\n");
+        printf("2 - Decompor double\n");
+        printf("Sua escolha: ");
+        scanf("%d", &escolha);
+
+        switch (escolha) {
+            case 1:
+                decomporFloat(numeroFloat);
+                break;
+            case 2:
+                decomporDouble(numeroDouble);
+                break;
+            default:
+                printf("Escolha inválida.\n");
+                break;
+        }
+    } else {
+        printf("Escolha inválida.\n");
     }
 
     // Linha para evitar que o programa feche imediatamente
