@@ -163,6 +163,23 @@ void decimalParaBCD(int n) {
     printf("\n\n");
 }
 
+// Função para converter decimal para complemento a 2 (16 bits)
+void decimalParaComplemento2(int n) {
+    printf("Convertendo %d para complemento a 2 (16 bits):\n", n);
+
+    // Checando se o número é negativo
+    if (n < 0) {
+        printf("O número é negativo. Vamos converter seu valor absoluto e aplicar o complemento a 2.\n");
+        n = 65536 + n;  // Adiciona 2^16 para representar o negativo em complemento a 2.
+    }
+
+    printf("Convertido para complemento a 2 (16 bits):\n");
+    for (int i = 15; i >= 0; i--) {
+        printf("%d", (n >> i) & 1);
+    }
+    printf("\n\n");
+}
+
 int main() {
     // Configurar o terminal para UTF-8
     SetConsoleOutputCP(CP_UTF8);
@@ -175,6 +192,7 @@ int main() {
     printf("Escolha uma opção:\n");
     printf("1 - Converter número decimal para outras bases\n");
     printf("2 - Decompor número real (float e double)\n");
+    printf("3 - Converter número decimal para complemento a 2 (16 bits)\n");
     printf("Sua escolha: ");
     scanf("%d", &escolha);
 
@@ -230,6 +248,10 @@ int main() {
                 printf("Escolha inválida.\n");
                 break;
         }
+    } else if (escolha == 3) {
+        printf("Digite um número na base 10: ");
+        scanf("%d", &numero);
+        decimalParaComplemento2(numero);
     } else {
         printf("Escolha inválida.\n");
     }
@@ -241,5 +263,6 @@ int main() {
 
     return 0;
 }
+
 
 
